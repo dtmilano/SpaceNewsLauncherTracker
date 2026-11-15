@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  Launcher icon foreground: an ascending rocket, drawn inside the adaptive-icon safe zone
+  (the central 66dp of the 108dp canvas, i.e. 21..87 on both axes) so no launcher mask can
+  clip a fin or the flame.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Exhaust flame, behind the nozzle. -->
+    <path android:pathData="M54,86 C49,80 46,76 46,73 L62,73 C62,76 59,80 54,86 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="54"
+                android:endY="86"
+                android:startX="54"
+                android:startY="72"
+                android:type="linear">
+                <item
+                    android:color="#FFFFC65C"
+                    android:offset="0.0" />
+                <item
+                    android:color="#FFFF7A1A"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#FFFFF0C2"
+        android:pathData="M54,80 C51.5,77 50,75 50,73 L58,73 C58,75 56.5,77 54,80 Z" />
+
+    <!-- Fins. -->
+    <path
+        android:fillColor="#FF4FC9E8"
+        android:pathData="M43,56 L34,71 L43,68 Z" />
+    <path
+        android:fillColor="#FF4FC9E8"
+        android:pathData="M65,56 L74,71 L65,68 Z" />
+
+    <!-- Nozzle. -->
+    <path
+        android:fillColor="#FF7C86AB"
+        android:pathData="M45,68 L63,68 L61,73 L47,73 Z" />
+
+    <!-- Fuselage. -->
+    <path android:pathData="M54,26 C61,35 65,45 65,55 L65,68 L43,68 L43,55 C43,45 47,35 54,26 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="65"
+                android:endY="26"
+                android:startX="43"
+                android:startY="68"
+                android:type="linear">
+                <item
+                    android:color="#FFB7C1DF"
+                    android:offset="0.0" />
+                <item
+                    android:color="#FFF2F5FF"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Porthole. -->
+    <path
+        android:fillColor="#FF0B1B3A"
+        android:pathData="M54,45m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+    <path
+        android:fillColor="#FF6FE6FF"
+        android:pathData="M54,45m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+</vector>

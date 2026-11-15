@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      The window is deliberately dark and bar-less: MainActivity runs fullscreen immersive,
+      and matching the window background to the deep-space palette avoids a white flash
+      between the launch animation and the first composition.
+    -->
+    <style name="Theme.SpaceNewsLauncherTracker" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/space_void</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

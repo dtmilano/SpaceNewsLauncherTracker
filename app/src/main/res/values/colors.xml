@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Kept in sync with ui/theme/Color.kt — the window background must match the Compose
+         canvas or the first frame flashes a different colour. -->
+    <color name="space_void">#FF04050E</color>
+</resources>
