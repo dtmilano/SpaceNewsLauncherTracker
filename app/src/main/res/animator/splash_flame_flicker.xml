@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><!-- The flame grows from the nozzle as the engine lights, then flickers. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="sequentially">
+    <objectAnimator
+        android:duration="220"
+        android:interpolator="@android:interpolator/decelerate_quad"
+        android:propertyName="scaleY"
+        android:valueFrom="0.2"
+        android:valueTo="1.15"
+        android:valueType="floatType" />
+    <objectAnimator
+        android:duration="90"
+        android:propertyName="scaleY"
+        android:repeatCount="infinite"
+        android:repeatMode="reverse"
+        android:valueFrom="1.15"
+        android:valueTo="0.85"
+        android:valueType="floatType" />
+</set>

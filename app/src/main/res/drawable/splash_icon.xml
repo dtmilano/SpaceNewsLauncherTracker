@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  Animated splash icon (windowSplashScreenAnimatedIcon must be an AnimatedVectorDrawable):
+  engine ignition on the pad. Lift-off is MainActivity's splash exit animation.
+-->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/splash_rocket">
+
+    <target
+        android:name="flame"
+        android:animation="@animator/splash_flame_flicker" />
+
+    <target
+        android:name="rocket"
+        android:animation="@animator/splash_rocket_rumble" />
+</animated-vector>

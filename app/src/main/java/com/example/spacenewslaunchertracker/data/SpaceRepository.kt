@@ -1,5 +1,6 @@
 package com.example.spacenewslaunchertracker.data
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -7,6 +8,7 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 /**
@@ -50,10 +52,10 @@ class SpaceRepository(cacheDir: File) {
     /** Latest launches, from cache when a fetch of at least [limit] items is still fresh. */
     suspend fun upcomingLaunches(limit: Int): List<UpcomingLaunch> {
         launches?.takeIf { it.isUsableFor(limit) }?.let { return it.value.take(limit) }
-        val fetched = withContext(Dispatchers.IO) {
-            val url = "$LL2_BASE/2.3.0/launches/upcoming/" +
-                "?limit=$FETCH_BATCH&mode=detailed&hide_recent_previous=true"
-            val body = get(url, source = "Launch Library 2")
+        val url = "$LL2_BASE/2.3.0/launches/upcoming/" +
+            "?limit=$FETCH_BATCH&mode=detailed&hide_recent_previous=true"
+        val fetched = fetching(source = LL2_NAME, url = url) {
+            val body = get(url, source = LL2_NAME)
             json.decodeFromString<LaunchListResponse>(body).results.map { it.toDomain() }
         }
         launches = Entry(FETCH_BATCH, fetched, System.currentTimeMillis())
@@ -63,9 +65,9 @@ class SpaceRepository(cacheDir: File) {
     /** Latest articles, from cache when a fetch of at least [limit] items is still fresh. */
     suspend fun recentNews(limit: Int): List<NewsArticle> {
         news?.takeIf { it.isUsableFor(limit) }?.let { return it.value.take(limit) }
-        val fetched = withContext(Dispatchers.IO) {
-            val url = "$SNAPI_BASE/v4/articles/?limit=$FETCH_BATCH&ordering=-published_at"
-            val body = get(url, source = "Spaceflight News API")
+        val url = "$SNAPI_BASE/v4/articles/?limit=$FETCH_BATCH&ordering=-published_at"
+        val fetched = fetching(source = SNAPI_NAME, url = url) {
+            val body = get(url, source = SNAPI_NAME)
             json.decodeFromString<ArticleListResponse>(body).results.map { it.toDomain() }
         }
         news = Entry(FETCH_BATCH, fetched, System.currentTimeMillis())
@@ -86,8 +88,32 @@ class SpaceRepository(cacheDir: File) {
             .header("Accept", "application/json")
             .build()
         http.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw HttpFailure(response.code, source)
+            if (!response.isSuccessful) {
+                throw HttpFailure(
+                    code = response.code,
+                    source = source,
+                    // `Retry-After` is either a delay in seconds or an HTTP date; only the
+                    // former is worth turning into "wait about two minutes".
+                    retryAfterSeconds = response.header("Retry-After")?.trim()?.toIntOrNull(),
+                )
+            }
             return response.body?.string().orEmpty()
+        }
+    }
+
+    /**
+     * Runs [block] on the IO dispatcher and turns any failure into a [LoadFailure] carrying
+     * an [AppError] — the one place that knows both the API and the URL, which is what the
+     * error's technical details need. Cancellation passes through untouched.
+     */
+    private suspend fun <T> fetching(source: String, url: String, block: () -> T): T {
+        val attemptedAt = Instant.now()
+        return try {
+            withContext(Dispatchers.IO) { block() }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (cause: Throwable) {
+            throw LoadFailure(AppError.from(cause, source, url, attemptedAt), cause)
         }
     }
 
@@ -98,6 +124,8 @@ class SpaceRepository(cacheDir: File) {
     private companion object {
         const val LL2_BASE = "https://ll.thespacedevs.com"
         const val SNAPI_BASE = "https://api.spaceflightnewsapi.net"
+        const val LL2_NAME = "Launch Library 2"
+        const val SNAPI_NAME = "Spaceflight News API"
         const val USER_AGENT = "SpaceNewsLauncherTracker/1.0 (Android sample app)"
         const val HTTP_CACHE_BYTES = 8L * 1024 * 1024
 

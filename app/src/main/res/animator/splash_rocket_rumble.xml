@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><!-- A sub-unit side-to-side shake: the vehicle straining against the clamps. -->
+<objectAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="50"
+    android:propertyName="translateX"
+    android:repeatCount="infinite"
+    android:repeatMode="reverse"
+    android:valueFrom="-0.35"
+    android:valueTo="0.35"
+    android:valueType="floatType" />

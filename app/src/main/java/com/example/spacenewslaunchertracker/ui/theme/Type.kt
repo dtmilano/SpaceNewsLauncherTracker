@@ -32,3 +32,15 @@ val Typography = Typography(
     )
     */
 )
+/**
+ * Launch-clock digits. Monospace so the countdown never changes width as it ticks — a
+ * proportional font makes a running clock jitter horizontally, which reads as a bug.
+ */
+val LaunchClockStyle = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Bold,
+    // Sized to fill the details column beside the 108dp mission image. The widest reading,
+    // `T-00d:00h:00m:00s`, still fits that column on one line at a 1.3 system font scale.
+    fontSize = 20.sp,
+    letterSpacing = (-0.4).sp,
+)

@@ -1,6 +1,5 @@
 package com.example.spacenewslaunchertracker.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,22 +20,15 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
 import com.example.spacenewslaunchertracker.data.NewsArticle
+import com.example.spacenewslaunchertracker.ui.components.MissionArtwork
 
 @Composable
 fun NewsTab(
@@ -49,7 +41,7 @@ fun NewsTab(
             modifier.fillMaxSize().padding(16.dp),
             contentAlignment = Alignment.Center,
         ) {
-            ErrorCard(state.error, onRetry)
+            ErrorPanel(state.error, isRetrying = state.isLoading, onRetry = onRetry)
         }
 
         state.isLoading && state.items.isEmpty() ->
@@ -62,8 +54,17 @@ fun NewsTab(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            state.error?.let { error -> item { ErrorCard(error, onRetry) } }
-            items(state.items, key = { it.id }) { article ->
+            state.error?.let { error ->
+                item(key = "error", contentType = "error") {
+                    ErrorPanel(
+                        error = error,
+                        isRetrying = state.isLoading,
+                        onRetry = onRetry,
+                        fallbackNote = "Showing the headlines loaded earlier.",
+                    )
+                }
+            }
+            items(state.items, key = { it.id }, contentType = { "article" }) { article ->
                 ArticleCard(article)
             }
         }
@@ -77,11 +78,18 @@ private fun ArticleCard(article: NewsArticle) {
         onClick = { openInBrowser(context, article.url) },
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            // Slightly translucent so the starfield shows through at the edges.
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
         ),
     ) {
         Row(Modifier.padding(14.dp)) {
-            Thumbnail(article.imageUrl, Modifier.size(84.dp))
+            // No image, or one that fails to load, gets procedural art seeded by the
+            // article id — deterministic, so a thumbnail never changes between visits.
+            MissionArtwork(
+                seed = article.id,
+                imageUrl = article.imageUrl?.takeIf { it.isNotBlank() },
+                modifier = Modifier.size(84.dp).clip(RoundedCornerShape(10.dp)),
+            )
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(
@@ -117,32 +125,6 @@ private fun ArticleCard(article: NewsArticle) {
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun Thumbnail(imageUrl: String?, modifier: Modifier = Modifier) {
-    var failed by remember(imageUrl) { mutableStateOf(false) }
-
-    Box(
-        modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (imageUrl.isNullOrBlank() || failed) {
-            Text("🛰️", fontSize = 28.sp)
-        } else {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                onState = { state ->
-                    if (state is AsyncImagePainter.State.Error) failed = true
-                },
-            )
         }
     }
 }

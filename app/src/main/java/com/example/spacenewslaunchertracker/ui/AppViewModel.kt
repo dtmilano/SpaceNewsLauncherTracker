@@ -8,6 +8,7 @@ import com.example.spacenewslaunchertracker.bedrock.ExplainResult
 import com.example.spacenewslaunchertracker.data.AppError
 import com.example.spacenewslaunchertracker.data.BedrockSettings
 import com.example.spacenewslaunchertracker.data.DisplaySettings
+import com.example.spacenewslaunchertracker.data.LoadFailure
 import com.example.spacenewslaunchertracker.data.NewsArticle
 import com.example.spacenewslaunchertracker.data.SettingsStore
 import com.example.spacenewslaunchertracker.data.SpaceRepository
@@ -68,24 +69,28 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadLaunches() {
         val limit = _display.value.launchCount
-        _launches.update { it.copy(isLoading = true, error = null) }
+        // The previous error stays up while retrying, so its panel can say "Trying…"
+        // instead of vanishing and reappearing.
+        _launches.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             runCatching { repository.upcomingLaunches(limit) }
                 .onSuccess { result -> _launches.value = SectionState(items = result) }
                 .onFailure { cause ->
-                    _launches.update { it.copy(isLoading = false, error = AppError.from(cause)) }
+                    _launches.update { it.copy(isLoading = false, error = cause.toAppError()) }
                 }
         }
     }
 
     fun loadNews() {
         val limit = _display.value.newsCount
-        _news.update { it.copy(isLoading = true, error = null) }
+        // The previous error stays up while retrying, so its panel can say "Trying…"
+        // instead of vanishing and reappearing.
+        _news.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             runCatching { repository.recentNews(limit) }
                 .onSuccess { result -> _news.value = SectionState(items = result) }
                 .onFailure { cause ->
-                    _news.update { it.copy(isLoading = false, error = AppError.from(cause)) }
+                    _news.update { it.copy(isLoading = false, error = cause.toAppError()) }
                 }
         }
     }
@@ -143,6 +148,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _explanations.update { it - launch.id }
         explain(launch)
     }
+
+    /** The repository describes its own failures; anything else is a bug worth naming. */
+    private fun Throwable.toAppError(): AppError =
+        (this as? LoadFailure)?.error ?: AppError.from(this, source = "this app", url = "n/a")
 
     private fun updateDisplay(transform: (DisplaySettings) -> DisplaySettings) {
         val updated = transform(_display.value)

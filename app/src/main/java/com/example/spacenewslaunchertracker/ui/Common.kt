@@ -5,62 +5,55 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.spacenewslaunchertracker.data.AppError
 
-/** Full-width error card. Rate-limit failures get their own accent so they read as transient. */
+/**
+ * Translucent card used for panels drawn over the starfield.
+ *
+ * The translucency is the point: a solid surface would hide the background, and a fully
+ * transparent one would make text unreadable. 86% opacity over the near-black void keeps the
+ * stars visible while holding contrast above the WCAG AA threshold for body text.
+ */
 @Composable
-fun ErrorCard(error: AppError, onRetry: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = MaterialTheme.colorScheme
-    Card(
+fun GlassCard(
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    OutlinedCard(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (error.isRateLimit) {
-                colors.tertiaryContainer
-            } else {
-                colors.errorContainer
-            },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.86f),
         ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(
-                text = if (error.isRateLimit) "⏳  Rate limit reached" else "⚠️  Couldn't load",
-                style = MaterialTheme.typography.titleMedium,
-                color = if (error.isRateLimit) {
-                    colors.onTertiaryContainer
-                } else {
-                    colors.onErrorContainer
-                },
-            )
-            Text(
-                text = error.message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (error.isRateLimit) {
-                    colors.onTertiaryContainer
-                } else {
-                    colors.onErrorContainer
-                },
-            )
-            OutlinedButton(onClick = onRetry) { Text("Try again") }
-        }
+        Column(
+            modifier = Modifier.padding(contentPadding),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            content = content,
+        )
     }
 }
 

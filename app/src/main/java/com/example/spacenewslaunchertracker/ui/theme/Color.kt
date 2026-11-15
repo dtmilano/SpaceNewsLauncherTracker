@@ -37,3 +37,8 @@ val ReentryRedContainer = Color(0xFF5C1611)
 
 val StarlightHigh = Color(0xFFE8ECFA)
 val StarlightMuted = Color(0xFFA7B0D0)
+
+/** Extra hues the Material scheme has no slot for, exposed through `LocalSpaceAccents`. */
+val AuroraGreen = Color(0xFF7CF5C4)
+val SolarFlare = Color(0xFFFF6E6E)
+val DeepSpaceMagenta = Color(0xFFFF8AD8)
